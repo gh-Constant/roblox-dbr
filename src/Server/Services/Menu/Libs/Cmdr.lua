@@ -1,8 +1,8 @@
 local Cmdr = require("@Packages/cmdr")
-local CommandsFolder = game.ServerScriptService.Server.Menu.Commands
+--local CommandsFolder = game.ServerScriptService.Server.Commands.Menu
 
 local function Start()
-    Cmdr:RegisterCommandsIn(CommandsFolder)
+  --  Cmdr:RegisterCommandsIn(CommandsFolder)
 end
 
 Start()

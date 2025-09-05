@@ -1,4 +1,4 @@
-local Log = require("@Common/Log")
+local Log = require("@GameCommon/Log")
 
 local function Start()
 	Log.info("Hello from TestService!")

@@ -6,4 +6,5 @@ realm = "shared"
 
 [dependencies]
 cmdr = "evaera/cmdr@1.12.0"
+bytenet = "ffrostflame/bytenet@0.4.6"
 Signal = "sleitnick/signal@2.0.3"

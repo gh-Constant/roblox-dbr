@@ -7,7 +7,7 @@ local MatchmakingService = {}
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Remotes = ReplicatedStorage.Common.Menu.Matchmaking.Remotes
+local Remotes = require(ReplicatedStorage.Common.Menu.Matchmaking.Remotes)
 
 local QueueManager = require(script.Matchmaking.QueueManager)
 local Matchmaker = require(script.Matchmaking.Matchmaker)
@@ -20,11 +20,11 @@ function MatchmakingService:Start()
 		print("MatchmakingService started")
 	end
 
-	Remotes.JoinSurvivorQueue.OnServerEvent:Connect(function(player)
+	Remotes.JoinSurvivorQueue.listen(function(data, player)
 		QueueManager.addPlayer(player, "survivor")
 	end)
 
-	Remotes.JoinKillerQueue.OnServerEvent:Connect(function(player)
+	Remotes.JoinKillerQueue.listen(function(data, player)
 		QueueManager.addPlayer(player, "killer")
 	end)
 
