@@ -3,7 +3,7 @@
 	Handles player data and role management for Dead by Roblox
 ]]
 
-local Role = require(script.Parent.Parent.Parent.Common.Enums.Roles)
+local Role = require("@GameCommon/Enums/Roles")
 
 local Player = {}
 Player.__index = Player

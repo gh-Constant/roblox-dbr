@@ -10,7 +10,7 @@ local Players = game:GetService("Players")
 local matchmakingMap = MemoryStoreService:GetSortedMap("MatchmakingMap")
 local joinCooldowns = MemoryStoreService:GetSortedMap("JoinCooldowns")
 
-local Config = require("@Common/Matchmaking/Config")
+local Config = require("@MenuCommon/Matchmaking/Config")
 
 function QueueManager.addPlayer(player, role)
 	local lastJoinTime, err = joinCooldowns:GetAsync(tostring(player.UserId))

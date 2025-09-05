@@ -7,13 +7,13 @@ local MatchmakingService = {}
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Remotes = ReplicatedStorage.Common.Matchmaking.Remotes
+local Remotes = ReplicatedStorage.Common.Menu.Matchmaking.Remotes
 
 local QueueManager = require(script.Matchmaking.QueueManager)
 local Matchmaker = require(script.Matchmaking.Matchmaker)
 
 
-local Config = require("@Common/Matchmaking/Config")
+local Config = require("@MenuCommon/Matchmaking/Config")
 
 function MatchmakingService:Start()
 	if Config.Debug.Matchmaking then

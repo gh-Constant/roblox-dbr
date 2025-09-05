@@ -5,8 +5,8 @@
 
 local Players = game:GetService("Players")
 local Player = require(script.Parent.Player.Player)
-local Roles = require(script.Parent.Parent.Common.Enums.Roles)
-local GameState = require(script.Parent.Parent.Common.Enums.GameState)
+local Roles = require("@GameCommon/Enums/Roles")
+local GameState = require("@GameCommon/Enums/GameState")
 
 local GameManager = {}
 GameManager.__index = GameManager

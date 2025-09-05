@@ -1,2 +1,3 @@
-require("@Services/TestService")
-require("@Services/MatchmakingService"):Start()
+-- Global Runtime
+
+require("@Services/Libs/Cmdr")

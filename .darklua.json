@@ -13,10 +13,18 @@
                     "@Packages": "Packages/",
                     "@Client": "src/Client/",
                     "@Controllers": "src/Client/Controllers/",
+                    "@MenuControllers": "src/Client/Controllers/Menu",
+                    "@GameControllers": "src/Client/Controllers/Game",
                     "@Common": "src/Common/",
+                    "@MenuCommon": "src/Common/Menu",
+                    "@GameCommon": "src/Common/Game",
                     "@Server": "src/Server/",
                     "@Services": "src/Server/Services/",
-                    "@Commands": "src/Server/Commands/"
+                    "@MenuServices": "src/Server/Services/Menu",
+                    "@GameServices": "src/Server/Services/Game",
+                    "@Commands": "src/Server/Commands/",
+                    "@MenuCommands": "src/Server/Commands/Menu",
+                    "@GameCommands": "src/Server/Commands/Game"
                 }
             },
             "target": {
