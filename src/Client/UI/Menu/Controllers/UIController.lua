@@ -1,11 +1,11 @@
 local Players = game:GetService("Players")
 
 local React = require("@Packages/React")
-local ReactRoblox = require("@Packages/ReactRoblox")
+local ReactRoblox = require("@Packages/react-roblox")
 
 local Log = require("@Common/Log")
 
-local UIRoot = require("@Client/UI/UIRoot")
+local UIRoot = require("@MenuUI/Components/UIRoot")
 
 local e = React.createElement
 

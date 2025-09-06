@@ -10,6 +10,8 @@
             "current": {
                 "name": "path",
                 "sources": {
+                    "@UI": "src/Client/UI/Shared/",
+                    "@MenuUI": "src/Client/UI/Menu/",
                     "@Hooks": "src/Client/UI/Shared/Hooks/",
                     "@Components": "src/Client/UI/Shared/Components/",
                     "@RobloxComponents": "src/Client/UI/Shared/Components/Roblox",

@@ -7,7 +7,6 @@ if not game.PlaceId == Config.PlaceIds.Game then
 	return
 end
 
-require("@GameServices/TestService")
 require("@GameServices/Player/Interactables")
 require("@GameServices/Libs/Cmdr")
 require("@GameServices/Player/MovementRestrictions")

@@ -6,6 +6,5 @@ if not game.PlaceId == Config.PlaceIds.Menu then
     return
 end
 
--- Initialize Menu UI
-local MenuController = require("@Client/UI/Menu/Controllers/MenuController")
-MenuController.Init()
+
+require("@MenuUI/Controllers/UIController")

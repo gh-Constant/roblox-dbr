@@ -7,6 +7,5 @@ if not game.PlaceId == Config.PlaceIds.Menu then
 	return
 end
 
-require("@MenuServices/TestService")
 require("@MenuServices/Libs/Cmdr")
 require("@MenuServices/MatchmakingService"):Start()
