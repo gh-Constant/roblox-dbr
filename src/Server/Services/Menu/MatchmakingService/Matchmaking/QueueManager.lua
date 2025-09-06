@@ -14,7 +14,49 @@ local Config = require("@MenuCommon/Matchmaking/Config")
 
 
 
+-- Get player's current role in queue
+function QueueManager.getPlayerRole(player)
+	-- Check if player is valid before accessing UserId
+	if not player or typeof(player) ~= "Instance" or not player:IsA("Player") then
+		return nil
+	end
+	
+	local success, role = pcall(function()
+		return matchmakingMap:GetAsync(tostring(player.UserId))
+	end)
+	
+	if success and role then
+		return role
+	end
+	
+	return nil
+end
+
 function QueueManager.addPlayer(player, role)
+	-- Check if player is valid before accessing UserId
+	if not player or typeof(player) ~= "Instance" or not player:IsA("Player") then
+		return
+	end
+	
+	-- Check if player is already in queue
+	local currentRole = QueueManager.getPlayerRole(player)
+	if currentRole then
+		-- If player is already in this queue, remove them (cancel queue)
+		if currentRole == role then
+			QueueManager.removePlayer(player)
+			if Config.Debug.Matchmaking then
+				print("[QueueManager] INFO: " .. player.Name .. " canceled their " .. role .. " queue")
+			end
+			return
+		end
+		
+		-- If player is in a different queue, don't allow them to join this one
+		if Config.Debug.Matchmaking then
+			print("[QueueManager] INFO: " .. player.Name .. " is already in " .. currentRole .. " queue")
+		end
+		return
+	end
+	
 	local lastJoinTime, err = joinCooldowns:GetAsync(tostring(player.UserId))
 	if err then
 		warn("[QueueManager] WARN: Failed to get last join time for " .. player.Name .. ":", err)
@@ -41,10 +83,15 @@ function QueueManager.addPlayer(player, role)
 end
 
 function QueueManager.removePlayer(player)
+	-- Check if player is valid before accessing UserId
+	if not player or typeof(player) ~= "Instance" or not player:IsA("Player") then
+		return
+	end
+	
 	pcall(function()
 		matchmakingMap:RemoveAsync(tostring(player.UserId))
 		if Config.Debug.Matchmaking then
-			print("[QueueManager] INFO: " .. player.Name .. " removed from queue due to disconnecting.")
+			print("[QueueManager] INFO: " .. player.Name .. " removed from queue.")
 		end
 	end)
 end
