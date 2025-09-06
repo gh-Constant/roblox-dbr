@@ -1,3 +1,12 @@
+-- Game Runtime
+local Config = require("@Common/Config")
+
+if not game.PlaceId == Config.PlaceIds.Game then
+	script.Disabled = true
+	script.Name = "GameRuntime (DISABLED - NOT GAME PLACE)"
+	return
+end
+
 local Players = game:GetService("Players")
 
 local function printTable(t, indent, done)
@@ -25,15 +34,6 @@ Players.PlayerAdded:Connect(function(player)
 	print("Teleport data received:")
 	printTable(teleportData)
 end)
-
--- Game Runtime
-local Config = require("@Common/Config")
-
-if not game.PlaceId == Config.PlaceIds.Game then
-	script.Disabled = true
-	script.Name = "GameRuntime (DISABLED - NOT GAME PLACE)"
-	return
-end
 
 require("@GameServices/Player/Interactables")
 require("@GameServices/Libs/Cmdr")

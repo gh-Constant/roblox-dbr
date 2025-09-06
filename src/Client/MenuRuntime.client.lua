@@ -1,9 +1,9 @@
 local Config = require("@Common/Config")
 
-if not game.PlaceId == Config.PlaceIds.Menu then
-    script.Disabled = true
-    script.Name = "MenuRuntime (DISABLED - NOT MENU PLACE)"
-    return
+if game.PlaceId ~= Config.PlaceIds.Menu then
+	script.Disabled = true
+	script.Name = "MenuRuntime (DISABLED - NOT MENU PLACE)"
+	return
 end
 
 -- DEV mode is used for debug features in React-lua. This syntax is a little
