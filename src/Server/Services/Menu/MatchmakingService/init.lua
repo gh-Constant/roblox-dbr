@@ -6,6 +6,8 @@ local MatchmakingService = {}
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local MessagingService = game:GetService("MessagingService")
+local TeleportService = game:GetService("TeleportService")
 
 local Remotes = require(ReplicatedStorage.Common.Menu.Matchmaking.Remotes)
 
@@ -56,6 +58,40 @@ function MatchmakingService:Start()
 					Config.Matchmaking.RequiredKillers,
 					Config.Matchmaking.RequiredSurvivors
 				)
+			end
+		end
+	end)
+
+	MessagingService:SubscribeAsync(Config.Matchmaking.TeleportTopic, function(message)
+		local data = message.Data
+		local privateServerCode = data.privateServerCode
+		local playersToTeleport = data.players
+
+		local playerObjects = {}
+		for _, playerInfo in ipairs(playersToTeleport) do
+			local player = Players:GetPlayerByUserId(playerInfo.userId)
+			if player then
+				table.insert(playerObjects, player)
+			end
+		end
+
+		if #playerObjects > 0 then
+			local success, result = pcall(function()
+				return TeleportService:TeleportToPrivateServer(
+					Config.Matchmaking.GamePlaceId,
+					privateServerCode,
+					playerObjects,
+					nil,
+					data
+				)
+			end)
+
+			if not success then
+				warn("[MatchmakingService] WARN: Failed to teleport players: " .. result)
+			else
+				if Config.Debug.Matchmaking then
+					print("[MatchmakingService] INFO: Teleported players to private server.")
+				end
 			end
 		end
 	end)

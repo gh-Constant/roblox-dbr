@@ -66,9 +66,24 @@ function Matchmaker.createMatch(killers, survivors, requiredKillers, requiredSur
 		return
 	end
 
+	local players = {}
+	for _, userId in ipairs(matchKillers) do
+		table.insert(players, {
+			userId = userId,
+			role = "killer",
+		})
+	end
+	for _, userId in ipairs(matchSurvivors) do
+		table.insert(players, {
+			userId = userId,
+			role = "survivor",
+		})
+	end
+
 	local message = {
 		privateServerCode = privateServerCode,
-		players = allPlayerIds,
+		players = players,
+		expectedPlayers = #allPlayerIds,
 	}
 
 	local success, result = pcall(function()
