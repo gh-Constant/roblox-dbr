@@ -5,7 +5,7 @@ local ReactRoblox = require("@Packages/react-roblox")
 
 local Log = require("@Common/Log")
 
-local UIRoot = require("@MenuUI/Components/UIRoot")
+local UIRoot = require("@MenuComponents/UIRoot")
 
 local e = React.createElement
 
