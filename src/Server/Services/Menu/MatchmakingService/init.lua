@@ -4,9 +4,9 @@
 
 local MatchmakingService = {}
 
+local MessagingService = game:GetService("MessagingService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local MessagingService = game:GetService("MessagingService")
 local TeleportService = game:GetService("TeleportService")
 
 local Remotes = require(ReplicatedStorage.Common.Menu.Matchmaking.Remotes)
@@ -15,8 +15,6 @@ local Matchmaker = require(script.Matchmaking.Matchmaker)
 local QueueManager = require(script.Matchmaking.QueueManager)
 
 local Config = require("@MenuCommon/Matchmaking/Config")
-
-
 
 function MatchmakingService:Start()
 	if Config.Debug.Matchmaking then
@@ -46,8 +44,8 @@ function MatchmakingService:Start()
 			if Config.Debug.Matchmaking then
 				print("[MatchmakingService] INFO: Survivor Queue Size: " .. #survivors)
 				print("[MatchmakingService] INFO: Killer Queue Size: " .. #killers)
+				print("[MatchmakingService] INFO: Server ID: " .. game.JobId)
 			end
-
 			if
 				#killers >= Config.Matchmaking.RequiredKillers
 				and #survivors >= Config.Matchmaking.RequiredSurvivors
