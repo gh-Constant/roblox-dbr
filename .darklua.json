@@ -11,6 +11,7 @@
                 "name": "path",
                 "sources": {
                     "@UI": "src/Client/UI/Shared/",
+                    "@GameUI": "src/Client/UI/Game/",
                     "@MenuUI": "src/Client/UI/Menu/",
                     "@Hooks": "src/Client/UI/Shared/Hooks/",
                     "@Components": "src/Client/UI/Shared/Components/",

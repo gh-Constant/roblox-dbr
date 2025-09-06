@@ -17,6 +17,7 @@ function Player.new(robloxPlayer)
 	self.Name = robloxPlayer.Name
 	self.Role = Role.None
 	self.IsAlive = true
+	self.IsReady = false
 	self.JoinTime = tick()
 	
 	return self
@@ -64,6 +65,15 @@ end
 
 function Player:Revive()
 	self.IsAlive = true
+end
+
+-- Ready state methods
+function Player:SetReady(ready)
+	self.IsReady = ready
+end
+
+function Player:GetReady()
+	return self.IsReady
 end
 
 -- Utility methods

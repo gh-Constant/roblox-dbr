@@ -23,18 +23,10 @@ local function printTable(t, indent, done)
 	end
 end
 
-Players.PlayerAdded:Connect(function(player)
-	local joinData = player:GetJoinData()
-	if not joinData or not joinData.TeleportData then
-		return
-	end
-
-	local teleportData = joinData.TeleportData
-
-	print("Teleport data received:")
-	printTable(teleportData)
-end)
-
+-- Initialize game services
+require("@GameServices/GameManager")
+require("@GameServices/Lobby/ReadyService")
 require("@GameServices/Player/Interactables")
 require("@GameServices/Libs/Cmdr")
 require("@GameServices/Player/MovementRestrictions")
+print("[GameRuntime] All services initialized successfully")

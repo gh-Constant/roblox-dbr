@@ -16,3 +16,6 @@ end
 -- Also note that __DEV__ **MUST** be set before React itself is required, so
 --  we set it here before any client code is run.
 _G.__DEV__ = "true"
+
+require("@GameUI/Controllers/UIController")
+require("@GameControllers/CameraController")

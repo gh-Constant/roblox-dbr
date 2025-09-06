@@ -15,6 +15,7 @@ local Matchmaker = require(script.Matchmaking.Matchmaker)
 local QueueManager = require(script.Matchmaking.QueueManager)
 
 local Config = require("@MenuCommon/Matchmaking/Config")
+local CommonConfig = require("@Common/Config")
 
 function MatchmakingService:Start()
 	if Config.Debug.Matchmaking then
@@ -47,14 +48,14 @@ function MatchmakingService:Start()
 				print("[MatchmakingService] INFO: Server ID: " .. game.JobId)
 			end
 			if
-				#killers >= Config.Matchmaking.RequiredKillers
-				and #survivors >= Config.Matchmaking.RequiredSurvivors
+				#killers >= CommonConfig.RequiredKillers
+				and #survivors >= CommonConfig.RequiredSurvivors
 			then
 				Matchmaker.createMatch(
 					killers,
 					survivors,
-					Config.Matchmaking.RequiredKillers,
-					Config.Matchmaking.RequiredSurvivors
+					CommonConfig.RequiredKillers,
+					CommonConfig.Matchmaking.RequiredSurvivors
 				)
 			end
 		end

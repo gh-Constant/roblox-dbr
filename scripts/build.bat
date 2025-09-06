@@ -7,7 +7,9 @@ set "ERRORLEVEL=0"
 REM If Packages aren't installed, install them.
 if not exist "Packages" (
     echo Installing packages...
-    call scripts\install-packages.bat
+    pushd "%~dp0.."
+    wally install
+    popd
     if !ERRORLEVEL! neq 0 (
         echo Failed to install packages
         exit /b 1

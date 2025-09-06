@@ -1,13 +1,23 @@
 --!strict
 
-local ByteNet = require(script.Parent.Parent.Parent.Packages.bytenet)
+local ByteNet = require("@Packages/bytenet")
 
 -- Define game packets using ByteNet
 local Remotes = ByteNet.defineNamespace("Game", function()
 	return {
 		-- Player Ready System
 		PlayerReady = ByteNet.definePacket({
-			isReady = ByteNet.bool
+			value = ByteNet.struct({
+				isReady = ByteNet.bool
+			})
+		}),
+		
+		-- Camera System
+		SetCamera = ByteNet.definePacket({
+			value = ByteNet.struct({
+				cameraType = ByteNet.string,
+				cframe = ByteNet.optional(ByteNet.cframe)
+			})
 		})
 	}
 end)
