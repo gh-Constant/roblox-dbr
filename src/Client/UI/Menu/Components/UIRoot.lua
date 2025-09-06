@@ -2,6 +2,7 @@ local React = require("@Packages/React")
 
 local ScreenGui = require("@RobloxComponents/ScreenGui")
 local useRem = require("@Hooks/useRem")
+local QueueButtons = require("@MenuComponents/QueueButtons")
 
 local e = React.createElement
 
@@ -34,6 +35,8 @@ local function UIRoot()
 				CornerRadius = UDim.new(0, rem(8)),
 			}),
 		}),
+		
+		QueueButtons = e(QueueButtons),
 	})
 end
 
