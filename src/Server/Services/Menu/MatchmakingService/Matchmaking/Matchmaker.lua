@@ -11,6 +11,8 @@ local matchmakingMap = game:GetService("MemoryStoreService"):GetSortedMap("Match
 
 local Config = require("@MenuCommon/Matchmaking/Config")
 
+
+
 -- Constants moved to Config.lua
 
 local function requeuePlayers(killers, survivors)
@@ -21,13 +23,13 @@ local function requeuePlayers(killers, survivors)
 		matchmakingMap:SetAsync(tostring(userId), "survivor", 300)
 	end
 	if Config.Debug.Matchmaking then
-		print("Re-queued players.")
+		print("[Matchmaker] INFO: Re-queued players.")
 	end
 end
 
 function Matchmaker.createMatch(killers, survivors, requiredKillers, requiredSurvivors)
 	if Config.Debug.Matchmaking then
-		print("Enough players available; creating a match...")
+		print("[Matchmaker] INFO: Enough players available; creating a match...")
 	end
 
 	local matchKillers = {}
@@ -56,9 +58,9 @@ function Matchmaker.createMatch(killers, survivors, requiredKillers, requiredSur
 
 	if not success then
 		if game:GetService("RunService"):IsStudio() then
-			warn("Impossible to use :ReserveServer in Studio")
+			warn("[Matchmaker] WARN: Impossible to use :ReserveServer in Studio")
 		else
-			warn("Failed to reserve server:", privateServerCode)
+			warn("[Matchmaker] WARN: Failed to reserve server:", privateServerCode)
 		end
 		requeuePlayers(matchKillers, matchSurvivors)
 		return
@@ -74,10 +76,10 @@ function Matchmaker.createMatch(killers, survivors, requiredKillers, requiredSur
 	end)
 
 	if not success then
-		warn("Failed to publish teleport message:", result)
+		warn("[Matchmaker] WARN: Failed to publish teleport message:", result)
 		requeuePlayers(matchKillers, matchSurvivors)
 	elseif Config.Debug.Matchmaking then
-		print("Successfully published teleport message for players:", allPlayerIds)
+		print("[Matchmaker] INFO: Successfully published teleport message for players:", allPlayerIds)
 	end
 end
 

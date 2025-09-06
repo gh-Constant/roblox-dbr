@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local React = require("@Packages/React")
 local ReactRoblox = require("@Packages/react-roblox")
 
-local Log = require("@Common/Log")
+
 
 local UIRoot = require("@MenuComponents/UIRoot")
 
@@ -20,7 +20,7 @@ local function Start()
 	local root = ReactRoblox.createRoot(Instance.new("Folder"))
 	root:render(ReactRoblox.createPortal(e(UIRoot), container))
 
-	Log.debug("Initialized UI under", container:GetFullName())
+	print("[UIController] DEBUG: Initialized UI under", container:GetFullName())
 end
 
 Start()

@@ -12,15 +12,17 @@ local joinCooldowns = MemoryStoreService:GetSortedMap("JoinCooldowns")
 
 local Config = require("@MenuCommon/Matchmaking/Config")
 
+
+
 function QueueManager.addPlayer(player, role)
 	local lastJoinTime, err = joinCooldowns:GetAsync(tostring(player.UserId))
 	if err then
-		warn("Failed to get last join time for " .. player.Name .. ":", err)
+		warn("[QueueManager] WARN: Failed to get last join time for " .. player.Name .. ":", err)
 	end
 
 	if lastJoinTime and os.time() - lastJoinTime < Config.Matchmaking.QueueCooldown then
 		if Config.Debug.Matchmaking then
-			print(player.Name .. " is on queue cooldown.")
+			print("[QueueManager] DEBUG: " .. player.Name .. " is on queue cooldown.")
 		end
 		return
 	end
@@ -31,9 +33,9 @@ function QueueManager.addPlayer(player, role)
 	end)
 	if Config.Debug.Matchmaking then
 		if ok then
-			print(player.Name .. " joined the " .. role .. " queue")
+			print("[QueueManager] INFO: " .. player.Name .. " joined the " .. role .. " queue")
 		else
-			warn("Failed to add to " .. role .. " queue:", err)
+			warn("[QueueManager] WARN: Failed to add to " .. role .. " queue:", err)
 		end
 	end
 end
@@ -42,7 +44,7 @@ function QueueManager.removePlayer(player)
 	pcall(function()
 		matchmakingMap:RemoveAsync(tostring(player.UserId))
 		if Config.Debug.Matchmaking then
-			print(player.Name .. " removed from queue due to disconnecting.")
+			print("[QueueManager] INFO: " .. player.Name .. " removed from queue due to disconnecting.")
 		end
 	end)
 end
@@ -54,7 +56,7 @@ function QueueManager.getQueuedPlayers()
 	end)
 
 	if not success then
-		warn("Failed to get players from matchmaking map:", result)
+		warn("[QueueManager] WARN: Failed to get players from matchmaking map:", result)
 		return {}, {}
 	end
 
@@ -72,7 +74,7 @@ function QueueManager.getQueuedPlayers()
 		else
 			matchmakingMap:RemoveAsync(item.key)
 			if Config.Debug.Matchmaking then
-				print("Removed offline player " .. item.key .. " from queue.")
+				print("[QueueManager] DEBUG: Removed offline player " .. item.key .. " from queue.")
 			end
 		end
 	end
