@@ -1,4 +1,4 @@
-local lobbyFolder = workspace.Lobby
+local lobbyFolder = workspace:FindFirstChild("Lobby")
 local Config = require("@Common/Config")
 
 local LobbyConfig = {
