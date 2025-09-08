@@ -4,96 +4,48 @@
 
 local MatchmakingService = {}
 
-local MessagingService = game:GetService("MessagingService")
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TeleportService = game:GetService("TeleportService")
-
-local Remotes = require(ReplicatedStorage.Common.Menu.Matchmaking.Remotes)
-
-local Matchmaker = require(script.Matchmaking.Matchmaker)
-local QueueManager = require(script.Matchmaking.QueueManager)
+-- Import modules
+local Network = require(script.Matchmaking.Network)
+local MainLoop = require(script.Matchmaking.MainLoop)
+local Teleport = require(script.Matchmaking.Teleport)
 
 local Config = require("@MenuCommon/Matchmaking/Config")
-local CommonConfig = require("@Common/Config")
 
+-- Start the matchmaking service by initializing all modules
 function MatchmakingService:Start()
 	if Config.Debug.Matchmaking then
-		print("[MatchmakingService] INFO: MatchmakingService started")
+		print("[MatchmakingService] INFO: Starting MatchmakingService")
 	end
 
-	Remotes.JoinSurvivorQueue.listen(function(data, player)
-		QueueManager.addPlayer(player, "survivor")
-	end)
+	-- Initialize remote event handlers
+	Network.initialize()
 
-	Remotes.JoinKillerQueue.listen(function(data, player)
-		QueueManager.addPlayer(player, "killer")
-	end)
+	-- Initialize teleport message handling
+	Teleport.initialize()
 
-	Players.PlayerRemoving:Connect(function(player)
-		QueueManager.removePlayer(player)
-	end)
+	-- Start the matchmaking loop
+	MainLoop.start()
 
-	task.spawn(function()
-		while task.wait(Config.Matchmaking.MatchmakingCheckInterval) do
-			if Config.Debug.Matchmaking then
-				print("[MatchmakingService] DEBUG: Checking for matches...")
-			end
+	if Config.Debug.Matchmaking then
+		print("[MatchmakingService] INFO: MatchmakingService started successfully")
+	end
+end
 
-			local survivors, killers = QueueManager.getQueuedPlayers()
+-- Stop the matchmaking service (optional cleanup method)
+function MatchmakingService:Stop()
+	if Config.Debug.Matchmaking then
+		print("[MatchmakingService] INFO: Stopping MatchmakingService")
+	end
 
-			if Config.Debug.Matchmaking then
-				print("[MatchmakingService] INFO: Survivor Queue Size: " .. #survivors)
-				print("[MatchmakingService] INFO: Killer Queue Size: " .. #killers)
-				print("[MatchmakingService] INFO: Server ID: " .. game.JobId)
-			end
-			if
-				#killers >= CommonConfig.RequiredKillers
-				and #survivors >= CommonConfig.RequiredSurvivors
-			then
-				Matchmaker.createMatch(
-					killers,
-					survivors,
-					CommonConfig.RequiredKillers,
-					CommonConfig.RequiredSurvivors
-				)
-			end
-		end
-	end)
+	-- Stop the matchmaking loop
+	MatchmakingLoop.stop()
 
-	MessagingService:SubscribeAsync(Config.Matchmaking.TeleportTopic, function(message)
-		local data = message.Data
-		local privateServerCode = data.privateServerCode
-		local playersToTeleport = data.players
+	-- Cleanup teleport handler
+	TeleportHandler.cleanup()
 
-		local playerObjects = {}
-		for _, playerInfo in ipairs(playersToTeleport) do
-			local player = Players:GetPlayerByUserId(playerInfo.userId)
-			if player then
-				table.insert(playerObjects, player)
-			end
-		end
-
-		if #playerObjects > 0 then
-			local success, result = pcall(function()
-				return TeleportService:TeleportToPrivateServer(
-					Config.Matchmaking.GamePlaceId,
-					privateServerCode,
-					playerObjects,
-					nil,
-					data
-				)
-			end)
-
-			if not success then
-				warn("[MatchmakingService] WARN: Failed to teleport players: " .. result)
-			else
-				if Config.Debug.Matchmaking then
-					print("[MatchmakingService] INFO: Teleported players to private server.")
-				end
-			end
-		end
-	end)
+	if Config.Debug.Matchmaking then
+		print("[MatchmakingService] INFO: MatchmakingService stopped")
+	end
 end
 
 return MatchmakingService
