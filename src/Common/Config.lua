@@ -4,7 +4,7 @@ local Config = {
 		Game = 81784005110801,
 	},
 	RequiredKillers = 1,		
-	RequiredSurvivors = 1,
+	RequiredSurvivors = 0,
 }
 
 return Config

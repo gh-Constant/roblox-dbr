@@ -55,7 +55,7 @@ function MatchmakingService:Start()
 					killers,
 					survivors,
 					CommonConfig.RequiredKillers,
-					CommonConfig.Matchmaking.RequiredSurvivors
+					CommonConfig.RequiredSurvivors
 				)
 			end
 		end
