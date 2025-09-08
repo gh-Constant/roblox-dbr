@@ -4,6 +4,7 @@
 ]]
 
 local Role = require("@GameCommon/Enums/Roles")
+local MovementRestrictions = require(script.Parent.Movement.Restrictions)
 
 local Player = {}
 Player.__index = Player
@@ -19,6 +20,10 @@ function Player.new(robloxPlayer)
 	self.IsAlive = true
 	self.IsReady = false
 	self.JoinTime = tick()
+	self.IsFrozen = false
+	
+	-- Handle character spawning for movement restrictions
+	self:_connectCharacterEvents()
 	
 	return self
 end
@@ -88,6 +93,57 @@ end
 function Player:Reset()
 	self.Role = Role.None
 	self.IsAlive = true
+	self.IsFrozen = false
+end
+
+-- Private method to connect character events
+function Player:_connectCharacterEvents()
+	-- Handle current character if it exists
+	if self.RobloxPlayer.Character then
+		self:_onCharacterAdded(self.RobloxPlayer.Character)
+	end
+	
+	-- Connect to future character spawns
+	self.RobloxPlayer.CharacterAdded:Connect(function(character)
+		self:_onCharacterAdded(character)
+	end)
+end
+
+-- Private method called when character is added
+function Player:_onCharacterAdded(character)
+	-- Wait for humanoid to be available
+	character:WaitForChild("Humanoid")
+	
+	-- Apply basic movement restrictions
+	MovementRestrictions.ApplyBasicRestrictions(self.RobloxPlayer)
+	
+	-- Restore frozen state if player was frozen
+	if self.IsFrozen then
+		MovementRestrictions.FreezePlayer(self.RobloxPlayer)
+	end
+end
+
+-- Movement restriction methods
+function Player:Freeze()
+	self.IsFrozen = true
+	MovementRestrictions.FreezePlayer(self.RobloxPlayer)
+end
+
+function Player:Unfreeze()
+	self.IsFrozen = false
+	MovementRestrictions.UnfreezePlayer(self.RobloxPlayer)
+end
+
+function Player:IsFrozen()
+	return self.IsFrozen
+end
+
+function Player:ApplyMovementRestrictions()
+	MovementRestrictions.ApplyBasicRestrictions(self.RobloxPlayer)
+end
+
+function Player:RemoveMovementRestrictions()
+	MovementRestrictions.RemoveBasicRestrictions(self.RobloxPlayer)
 end
 
 -- Static methods

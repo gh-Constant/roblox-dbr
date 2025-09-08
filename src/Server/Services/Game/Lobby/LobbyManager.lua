@@ -6,7 +6,6 @@
 local LobbyConfig = require(script.Parent.LobbyConfig)
 local CameraService = require(script.Parent.CameraService)
 local Roles = require("@GameCommon/Enums/Roles")
-local MovementRestrictions = require("@GameServices/Player/MovementRestrictions")
 
 local LobbyManager = {
 	survivorsInPods = {},
@@ -67,7 +66,7 @@ function LobbyManager:TeleportPlayerToPod(player)
 		print("[LobbyManager] Successfully teleported " .. player.Name .. " to pod " .. podNumber)
 		
 		-- Freeze the player in the lobby
-		MovementRestrictions.FreezePlayer(player.RobloxPlayer)
+		player:Freeze()
 		
 		-- Assign pod
 		local podsInUse = role == Roles.Survivor and self.survivorsInPods or self.killersInPods

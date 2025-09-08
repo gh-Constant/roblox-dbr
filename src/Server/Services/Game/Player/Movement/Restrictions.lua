@@ -1,13 +1,10 @@
 --[[
-	@fileoverview PlayerMovementService - Server-side service for managing player movement restrictions
-	@author Generated
-	@version 1.0.0
-	@date 2024
+	MovementRestrictions Module
+	Utility module for managing player movement restrictions
+	To be called by the Player module, not runtime events
 ]]
 
 local MovementRestrictions = {}
-
-local Players = game:GetService("Players")
 
 -- Constants
 local MOVEMENT_CONFIG = {
@@ -67,11 +64,16 @@ function MovementRestrictions.IsPlayerFrozen(player)
 	return frozenPlayers[player] == true
 end
 
--- Handle all players (existing and new)
-Players.PlayerAdded:Connect(function(player)
-	player.CharacterAdded:Connect(function(character)
-		local humanoid = character:WaitForChild("Humanoid")
-		
+-- Apply basic movement restrictions to a character
+function MovementRestrictions.ApplyBasicRestrictions(player)
+	if not player or not player.Character then
+		return
+	end
+	
+	local character = player.Character
+	local humanoid = character:FindFirstChild("Humanoid")
+	
+	if humanoid then
 		-- Disable jumping
 		humanoid.JumpPower = MOVEMENT_CONFIG.JUMP_POWER
 		humanoid.UseJumpPower = MOVEMENT_CONFIG.USE_JUMP_POWER
@@ -79,30 +81,31 @@ Players.PlayerAdded:Connect(function(player)
 		
 		-- Disable climbing
 		humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, MOVEMENT_CONFIG.CLIMBING_ENABLED)
-	end)
-end)
+		
+		print("[MovementRestrictions] Applied basic restrictions to: " .. player.Name)
+	end
+end
 
--- Handle players already in the game
-for _, player in pairs(Players:GetPlayers()) do
-	if player.Character then
-		local humanoid = player.Character:FindFirstChild("Humanoid")
-		if humanoid then
-			humanoid.JumpPower = MOVEMENT_CONFIG.JUMP_POWER
-			humanoid.UseJumpPower = MOVEMENT_CONFIG.USE_JUMP_POWER
-			humanoid.JumpHeight = MOVEMENT_CONFIG.JUMP_HEIGHT
-			humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, MOVEMENT_CONFIG.CLIMBING_ENABLED)
-		end
+-- Remove basic movement restrictions from a character
+function MovementRestrictions.RemoveBasicRestrictions(player)
+	if not player or not player.Character then
+		return
 	end
 	
-	-- Connect to future character spawns for existing players
-	player.CharacterAdded:Connect(function(character)
-		local humanoid = character:WaitForChild("Humanoid")
+	local character = player.Character
+	local humanoid = character:FindFirstChild("Humanoid")
+	
+	if humanoid then
+		-- Restore jumping (default Roblox values)
+		humanoid.JumpPower = 50
+		humanoid.UseJumpPower = true
+		humanoid.JumpHeight = 7.2
 		
-		humanoid.JumpPower = MOVEMENT_CONFIG.JUMP_POWER
-		humanoid.UseJumpPower = MOVEMENT_CONFIG.USE_JUMP_POWER
-		humanoid.JumpHeight = MOVEMENT_CONFIG.JUMP_HEIGHT
-		humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, MOVEMENT_CONFIG.CLIMBING_ENABLED)
-	end)
+		-- Enable climbing
+		humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, true)
+		
+		print("[MovementRestrictions] Removed basic restrictions from: " .. player.Name)
+	end
 end
 
 return MovementRestrictions

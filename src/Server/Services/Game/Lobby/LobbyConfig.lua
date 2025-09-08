@@ -14,8 +14,8 @@ local LobbyConfig = {
     yOffset = 4,
 
     -- Maximum number of players per role
-    maxSurvivors = Config.RequiredKillers,
-    maxKillers = Config.RequiredSurvivors,
+    maxSurvivors = Config.RequiredSurvivors,
+    maxKillers = Config.RequiredKillers,
 }
 
 return LobbyConfig
