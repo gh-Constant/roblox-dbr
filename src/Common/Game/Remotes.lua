@@ -18,6 +18,14 @@ local Remotes = ByteNet.defineNamespace("Game", function()
 				cameraType = ByteNet.string,
 				cframe = ByteNet.optional(ByteNet.cframe)
 			})
+		}),
+		
+		-- Game State System
+		GameStateChanged = ByteNet.definePacket({
+			value = ByteNet.struct({
+				gameState = ByteNet.string,
+				mapName = ByteNet.optional(ByteNet.string)
+			})
 		})
 	}
 end)

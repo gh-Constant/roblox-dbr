@@ -5,10 +5,19 @@ local e = React.createElement
 export type Props = React.ElementProps<ScreenGui>
 
 local function ScreenGui(props: Props)
-	return e("ScreenGui", {
+	local screenGuiProps = {
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 		ResetOnSpawn = false,
-	}, props.children)
+	}
+	
+	-- Pass through additional props like IgnoreGuiInset
+	for key, value in pairs(props) do
+		if key ~= "children" then
+			screenGuiProps[key] = value
+		end
+	end
+	
+	return e("ScreenGui", screenGuiProps, props.children)
 end
 
 return ScreenGui

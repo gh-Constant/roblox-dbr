@@ -10,6 +10,8 @@ local Roles = require("@GameCommon/Enums/Roles")
 local GameState = require("@GameCommon/Enums/GameState")
 local CommonConfig = require("@Common/Config")
 local LobbyManager = require(script.Parent.Lobby.LobbyManager)
+local MapChooser = require(script.Parent.Lobby.MapChooser)
+local Remotes = require(game.ReplicatedStorage.Common.Game.Remotes)
 
 local GameManager = {
 	Players = {}, -- Dictionary of UserId -> Player instances
@@ -235,14 +237,32 @@ end
 
 -- Start the game when all players are ready
 function GameManager:StartGame()
-	print("[GameManager] WARN: Game starting - functionality not implemented")
 	print("[GameManager] Starting game with " .. self:GetPlayerCount() .. " players")
 	
-	-- TODO: Implement actual game start logic here
-	-- - Spawn players in appropriate locations
-	-- - Start game timers and mechanics
+	-- Choose a random map for the game
+	local chosenMap = MapChooser:ChooseRandomMap()
+	if chosenMap then
+		print("[GameManager] Selected map: " .. chosenMap.name .. " for the upcoming match!")
+		-- Store the chosen map for later use
+		self.CurrentMap = chosenMap
+	else
+		warn("[GameManager] Failed to select a map! Game cannot start.")
+		return
+	end
 	
+	-- Set game state and notify all clients
 	self:SetGameState(GameState.Starting)
+	
+	-- Broadcast game state change to all clients for loading screen
+	Remotes.GameStateChanged.sendToAll({
+		gameState = "Starting",
+		mapName = chosenMap.name
+	})
+	
+	-- TODO: Implement actual game start logic here
+	-- - Spawn players in appropriate locations based on chosen map
+	-- - Start game timers and mechanics
+	-- - After loading is complete, send "InProgress" state
 end
 
 -- Initialize player events

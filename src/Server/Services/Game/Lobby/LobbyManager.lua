@@ -6,6 +6,7 @@
 local LobbyConfig = require(script.Parent.LobbyConfig)
 local CameraService = require(script.Parent.CameraService)
 local Roles = require("@GameCommon/Enums/Roles")
+local MovementRestrictions = require("@GameServices/Player/MovementRestrictions")
 
 local LobbyManager = {
 	survivorsInPods = {},
@@ -60,8 +61,13 @@ function LobbyManager:TeleportPlayerToPod(player)
 	print("[LobbyManager] Character: " .. tostring(character))
 	if character and character:FindFirstChild("HumanoidRootPart") then
 		local targetPosition = podPart.Position + Vector3.new(0, LobbyConfig.yOffset, 0)
-		character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+		-- Rotate character 180 degrees to face the correct direction
+		local rotatedCFrame = CFrame.new(targetPosition) * CFrame.Angles(0, math.rad(180), 0)
+		character.HumanoidRootPart.CFrame = rotatedCFrame
 		print("[LobbyManager] Successfully teleported " .. player.Name .. " to pod " .. podNumber)
+		
+		-- Freeze the player in the lobby
+		MovementRestrictions.FreezePlayer(player.RobloxPlayer)
 		
 		-- Assign pod
 		local podsInUse = role == Roles.Survivor and self.survivorsInPods or self.killersInPods
