@@ -2,7 +2,7 @@ local React = require("@Packages/React")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Remotes = require(ReplicatedStorage.Common.Game.Remotes)
 
-local ScreenGui = require("@RobloxComponents/ScreenGui")
+local ScreenGui = require("@RobloxComponents/ScreenGUI")
 local LobbyUI = require(script.Parent.LobbyUI)
 local LoadingScreen = require(script.Parent.LoadingScreen)
 

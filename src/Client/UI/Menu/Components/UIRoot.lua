@@ -1,6 +1,6 @@
 local React = require("@Packages/React")
 
-local ScreenGui = require("@RobloxComponents/ScreenGui")
+local ScreenGui = require("@RobloxComponents/ScreenGUI")
 local useRem = require("@Hooks/useRem")
 local QueueButtons = require("@MenuComponents/QueueButtons")
 
