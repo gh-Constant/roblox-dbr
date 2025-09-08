@@ -9,8 +9,7 @@ end
 
 -- Initialize game services
 require("@GameServices/GameManager")
-require("@GameServices/Lobby/ReadyService")
 require("@GameServices/Player/Interactables")
 require("@GameServices/Libs/Cmdr")
-require("@GameServices/Player/MovementRestrictions")
+
 print("[GameRuntime] All services initialized successfully")

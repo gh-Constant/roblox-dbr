@@ -235,6 +235,48 @@ function GameManager:TeleportAllToLobby()
 	end
 end
 
+-- Check if all players are ready and start game if conditions are met
+function GameManager:CheckAllPlayersReady()
+	local allPlayers = self:GetAllPlayers()
+	local totalPlayers = 0
+	local readyPlayers = 0
+	
+	for _, playerInstance in pairs(allPlayers) do
+		totalPlayers = totalPlayers + 1
+		if playerInstance:GetReady() then
+			readyPlayers = readyPlayers + 1
+		end
+	end
+	
+	-- Check if we have enough players and all are ready
+	if totalPlayers >= self:GetExpectedPlayers() and readyPlayers == totalPlayers and totalPlayers > 0 then
+		print("[GameManager] All players ready - starting game")
+		self:StartGame()
+		return true
+	end
+	
+	return false
+end
+
+-- Handle player ready state change
+function GameManager:SetPlayerReady(userId, isReady)
+	-- Check if game state allows ready state changes
+	if self.GameState == GameState.Starting or self.GameState == GameState.InProgress or self.GameState == GameState.Ended then
+		print("[GameManager] Cannot ready up - game already " .. self.GameState:lower())
+		return false
+	end
+	
+	local playerInstance = self:GetPlayer(userId)
+	if playerInstance then
+		playerInstance:SetReady(isReady)
+		self:CheckAllPlayersReady()
+		return true
+	else
+		print("[GameManager] ERROR: Player instance not found for userId: " .. userId)
+		return false
+	end
+end
+
 -- Start the game when all players are ready
 function GameManager:StartGame()
 	print("[GameManager] Starting game with " .. self:GetPlayerCount() .. " players")
@@ -264,6 +306,11 @@ function GameManager:StartGame()
 	-- - Start game timers and mechanics
 	-- - After loading is complete, send "InProgress" state
 end
+
+-- Handle PlayerReady remote
+Remotes.PlayerReady.listen(function(data, player)
+	GameManager:SetPlayerReady(player.UserId, data.isReady)
+end)
 
 -- Initialize player events
 print("[GameManager] About to connect player events...")

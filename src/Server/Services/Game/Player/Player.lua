@@ -75,9 +75,16 @@ end
 -- Ready state methods
 function Player:SetReady(ready)
 	self.IsReady = ready
+	print("[Player] " .. self.Name .. " ready state: " .. tostring(ready))
 end
 
 function Player:GetReady()
+	return self.IsReady
+end
+
+-- Toggle ready state
+function Player:ToggleReady()
+	self:SetReady(not self.IsReady)
 	return self.IsReady
 end
 
