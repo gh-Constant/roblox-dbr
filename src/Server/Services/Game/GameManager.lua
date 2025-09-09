@@ -22,6 +22,26 @@ local GameManager = {
 
 print("[GameManager] Initialized - Expected players: " .. GameManager.ExpectedPlayers .. (RunService:IsStudio() and " (Studio)" or ""))
 
+-- ========================================
+-- MAIN FUNCTIONS (Call other functions)
+-- ========================================
+
+-- Private method to connect player events
+function GameManager:_connectPlayerEvents()
+	print("[GameManager] Connecting player events...")
+	Players.PlayerAdded:Connect(function(robloxPlayer)
+		print("[GameManager] PlayerAdded event fired for: " .. robloxPlayer.Name)
+		
+		-- Handle teleport data if available
+		self:_handleTeleportData(robloxPlayer)
+		
+		self:_onPlayerJoined(robloxPlayer)
+	end)
+	
+	Players.PlayerRemoving:Connect(function(robloxPlayer)
+		self:_onPlayerLeft(robloxPlayer)
+	end)
+end
 
 -- Handle player joining
 function GameManager:_onPlayerJoined(robloxPlayer)
@@ -29,8 +49,51 @@ function GameManager:_onPlayerJoined(robloxPlayer)
 	local playerInstance = Player.new(robloxPlayer)
 	self.Players[robloxPlayer.UserId] = playerInstance
 	
-	-- Assign role from teleport data if available
+	-- Assign role to the player
+	self:_assignPlayerRole(playerInstance, robloxPlayer)
+	
+	print("[GameManager] Player joined: " .. robloxPlayer.Name .. " (" .. self:GetPlayerCount() .. "/" .. self.ExpectedPlayers .. ")")
+	
+	-- Handle player teleportation to lobby
+	self:_handlePlayerTeleportation(playerInstance, robloxPlayer)
+	
+	-- Check if all expected players have joined
+	self:_checkGameReadyStatus()
+end
+
+-- Handle player leaving
+function GameManager:_onPlayerLeft(robloxPlayer)
+	local playerInstance = self.Players[robloxPlayer.UserId]
+	
+	if playerInstance then
+		self.Players[robloxPlayer.UserId] = nil
+		print("[GameManager] Player left: " .. robloxPlayer.Name .. " (" .. self:GetPlayerCount() .. "/" .. self.ExpectedPlayers .. ")")
+		
+		-- Check if game should end due to insufficient players
+		self:_checkInsufficientPlayers()
+	else
+		print("[GameManager] ERROR: Player instance not found for " .. robloxPlayer.Name)
+	end
+end
+
+-- ========================================
+-- HELPER FUNCTIONS (Called by main functions)
+-- ========================================
+
+-- Handle teleport data from player join data
+function GameManager:_handleTeleportData(robloxPlayer)
+	local joinData = robloxPlayer:GetJoinData()
+	if joinData and joinData.TeleportData then
+		local teleportData = joinData.TeleportData
+		print("[GameManager] Teleport data received for: " .. robloxPlayer.Name)
+		self:SetTeleportData(teleportData)
+	end
+end
+
+-- Assign role to player from teleport data or default studio role
+function GameManager:_assignPlayerRole(playerInstance, robloxPlayer)
 	local roleAssigned = false
+	
 	if self.TeleportData and self.TeleportData.players then
 		for _, playerData in ipairs(self.TeleportData.players) do
 			if playerData.userId == robloxPlayer.UserId then
@@ -53,10 +116,10 @@ function GameManager:_onPlayerJoined(robloxPlayer)
 			print("[GameManager] Studio: " .. robloxPlayer.Name .. " assigned " .. roleStr)
 		end
 	end
-	
-	print("[GameManager] Player joined: " .. robloxPlayer.Name .. " (" .. self:GetPlayerCount() .. "/" .. self.ExpectedPlayers .. ")")
-	
-	-- Teleport player to lobby if they have a role
+end
+
+-- Handle player teleportation to lobby
+function GameManager:_handlePlayerTeleportation(playerInstance, robloxPlayer)
 	print("[GameManager] Checking if player has role: " .. tostring(playerInstance:HasRole()))
 	if playerInstance:HasRole() then
 		print("[GameManager] Player has role, setting up teleportation")
@@ -79,48 +142,19 @@ function GameManager:_onPlayerJoined(robloxPlayer)
 	else
 		print("[GameManager] Player has no role, skipping teleportation")
 	end
-	
-	-- Check if all expected players have joined
+end
+
+-- Check if game is ready to start after player joins
+function GameManager:_checkGameReadyStatus()
 	if self:GetPlayerCount() >= self.ExpectedPlayers then
 		print("[GameManager] All players joined - ready to start")
 	end
 end
 
--- Private method to connect player events
-function GameManager:_connectPlayerEvents()
-	print("[GameManager] Connecting player events...")
-	Players.PlayerAdded:Connect(function(robloxPlayer)
-		print("[GameManager] PlayerAdded event fired for: " .. robloxPlayer.Name)
-		
-		-- Handle teleport data if available
-		local joinData = robloxPlayer:GetJoinData()
-		if joinData and joinData.TeleportData then
-			local teleportData = joinData.TeleportData
-			print("[GameManager] Teleport data received for: " .. robloxPlayer.Name)
-			self:SetTeleportData(teleportData)
-		end
-		
-		self:_onPlayerJoined(robloxPlayer)
-	end)
-	
-	Players.PlayerRemoving:Connect(function(robloxPlayer)
-		self:_onPlayerLeft(robloxPlayer)
-	end)
-end
--- Handle player leaving
-function GameManager:_onPlayerLeft(robloxPlayer)
-	local playerInstance = self.Players[robloxPlayer.UserId]
-	
-	if playerInstance then
-		self.Players[robloxPlayer.UserId] = nil
-		print("[GameManager] Player left: " .. robloxPlayer.Name .. " (" .. self:GetPlayerCount() .. "/" .. self.ExpectedPlayers .. ")")
-		
-		-- Check if game should end due to insufficient players
-		if self:GetPlayerCount() < self.ExpectedPlayers and self.GameState ~= GameState.Waiting then
-			print("[GameManager] WARN: Insufficient players remaining")
-		end
-	else
-		print("[GameManager] ERROR: Player instance not found for " .. robloxPlayer.Name)
+-- Check if game should end due to insufficient players
+function GameManager:_checkInsufficientPlayers()
+	if self:GetPlayerCount() < self.ExpectedPlayers and self.GameState ~= GameState.Waiting then
+		print("[GameManager] WARN: Insufficient players remaining")
 	end
 end
 
