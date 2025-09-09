@@ -25,6 +25,7 @@
                     "@Common": "src/Common/",
                     "@MenuCommon": "src/Common/Menu",
                     "@GameCommon": "src/Common/Game",
+                    "@CommonConfig": "src/Common/Config",
                     "@Server": "src/Server/",
                     "@Services": "src/Server/Services/",
                     "@MenuServices": "src/Server/Services/Menu",
