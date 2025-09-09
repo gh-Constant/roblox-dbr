@@ -1,6 +1,11 @@
 -- Generator interactable class
+local Signal = require(game.ReplicatedStorage.Packages.Signal)
+
 local Generator = {}
 Generator.__index = Generator
+
+-- Static signal for generator completion (shared across all generators)
+Generator.GeneratorCompleted = Signal.new()
 
 -- Create a new Generator instance
 function Generator.new(obj)
@@ -8,6 +13,7 @@ function Generator.new(obj)
 	self.object = obj
 	self.progress = 0
 	self.isBeingRepaired = false
+	self.isCompleted = false
 	return self
 end
 
@@ -47,8 +53,17 @@ function Generator:OnInteract(player)
 	
 	-- TODO: Implement generator repair minigame
 	-- For now, just simulate progress
+	local oldProgress = self.progress
 	self.progress = math.min(100, self.progress + 25)
 	print("Generator progress:", self.progress .. "%")
+	
+	-- Check if generator was just completed
+	if oldProgress < 100 and self.progress >= 100 and not self.isCompleted then
+		self.isCompleted = true
+		print("Generator completed! Firing signal...")
+		-- Fire the static signal to notify GameManager
+		Generator.GeneratorCompleted:Fire(self)
+	end
 	
 	self.isBeingRepaired = false
 end

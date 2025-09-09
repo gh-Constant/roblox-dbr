@@ -12,12 +12,18 @@ local CommonConfig = require("@Common/Config")
 local LobbyManager = require(script.Parent.Lobby.LobbyManager)
 local MapChooser = require(script.Parent.Lobby.MapChooser)
 local Remotes = require(game.ReplicatedStorage.Common.Game.Remotes)
+local Generator = require(script.Parent.Interactables.Generator)
 
 local GameManager = {
 	Players = {}, -- Dictionary of UserId -> Player instances
 	GameState = GameState.Waiting,
 	ExpectedPlayers = RunService:IsStudio() and 1 or (CommonConfig.RequiredKillers + CommonConfig.RequiredSurvivors),
-	TeleportData = nil -- Store teleport data for role assignment
+	TeleportData = nil, -- Store teleport data for role assignment
+	
+	-- Generator Management
+	CompletedGenerators = 0,
+	RequiredGenerators = 5, -- Will be set from GameConfig when available
+	CurrentMap = nil
 }
 
 print("[GameManager] Initialized - Expected players: " .. GameManager.ExpectedPlayers .. (RunService:IsStudio() and " (Studio)" or ""))
@@ -156,6 +162,65 @@ function GameManager:_checkInsufficientPlayers()
 	if self:GetPlayerCount() < self.ExpectedPlayers and self.GameState ~= GameState.Waiting then
 		print("[GameManager] WARN: Insufficient players remaining")
 	end
+end
+
+-- ========================================
+-- GENERATOR MANAGEMENT
+-- ========================================
+
+-- Handle generator completion (called by Generator signal)
+function GameManager:OnGeneratorCompleted(generator)
+	self.CompletedGenerators = self.CompletedGenerators + 1
+	local remaining = self:GetRemainingGenerators()
+	
+	print("[GameManager] Generator completed! (" .. self.CompletedGenerators .. "/" .. self.RequiredGenerators .. ")")
+	print("[GameManager] Remaining generators: " .. remaining)
+	
+	-- Broadcast generator completion to all clients
+	if Remotes.GeneratorCompleted then
+		Remotes.GeneratorCompleted.sendToAll({
+			completed = self.CompletedGenerators,
+			remaining = remaining,
+			required = self.RequiredGenerators
+		})
+	end
+	
+	-- Check win condition
+	if self.CompletedGenerators >= self.RequiredGenerators then
+		self:OnAllGeneratorsCompleted()
+	end
+end
+
+-- Handle all generators completed (survivor win condition)
+function GameManager:OnAllGeneratorsCompleted()
+	print("[GameManager] All required generators completed! Exit gates can now be powered.")
+	
+	-- Set game state to end game
+	self:SetGameState(GameState.EndGame)
+	
+	-- Broadcast to all clients
+	Remotes.GameStateChanged.sendToAll({
+		gameState = "EndGame",
+		message = "All generators completed! Exit gates are now available!"
+	})
+	
+	-- TODO: Enable exit gates, start end game collapse timer
+end
+
+-- Get remaining generators needed
+function GameManager:GetRemainingGenerators()
+	return math.max(0, self.RequiredGenerators - self.CompletedGenerators)
+end
+
+-- Get completed generators count
+function GameManager:GetCompletedGenerators()
+	return self.CompletedGenerators
+end
+
+-- Reset generators for new match
+function GameManager:ResetGenerators()
+	self.CompletedGenerators = 0
+	print("[GameManager] Generator progress reset")
 end
 
 -- Public methods for player management
@@ -315,6 +380,9 @@ end
 function GameManager:StartGame()
 	print("[GameManager] Starting game with " .. self:GetPlayerCount() .. " players")
 	
+	-- Reset generators for new match
+	self:ResetGenerators()
+	
 	-- Choose a random map for the game
 	local chosenMap = MapChooser:ChooseRandomMap()
 	if chosenMap then
@@ -332,7 +400,9 @@ function GameManager:StartGame()
 	-- Broadcast game state change to all clients for loading screen
 	Remotes.GameStateChanged.sendToAll({
 		gameState = "Starting",
-		mapName = chosenMap.name
+		mapName = chosenMap.name,
+		requiredGenerators = self.RequiredGenerators,
+		completedGenerators = self.CompletedGenerators
 	})
 	
 	-- TODO: Implement actual game start logic here
@@ -350,5 +420,11 @@ end)
 print("[GameManager] About to connect player events...")
 GameManager:_connectPlayerEvents()
 print("[GameManager] Player events connected successfully")
+
+-- Connect to generator completion signal
+Generator.GeneratorCompleted:Connect(function(generator)
+	GameManager:OnGeneratorCompleted(generator)
+end)
+print("[GameManager] Connected to Generator completion signal")
 
 return GameManager
