@@ -12,8 +12,10 @@ local function UIRoot()
 	-- State to track loading screen visibility
 	local showLoading, setShowLoading = React.useState(false)
 	local loadingText, setLoadingText = React.useState("Preparing game...")
+	-- State to track lobby UI visibility
+	local showLobbyUI, setShowLobbyUI = React.useState(true)
 	
-	-- Listen for loading screen events
+	-- Listen for UI control events
 	React.useEffect(function()
 		-- Listen for loading screen show event
 		local showConnection = Remotes.LoadingScreenShow.listen(function(data)
@@ -26,9 +28,15 @@ local function UIRoot()
 			setShowLoading(false)
 		end)
 		
+		-- Listen for lobby UI hide event
+		local lobbyHideConnection = Remotes.LobbyUIHide.listen(function(data)
+			setShowLobbyUI(false)
+		end)
+		
 		return function()
 			showConnection:Disconnect()
 			hideConnection:Disconnect()
+			lobbyHideConnection:Disconnect()
 		end
 	end, {})
 	
@@ -37,7 +45,7 @@ local function UIRoot()
 		Name = "GameUI",
 		IgnoreGuiInset = true,
 	}, {
-		LobbyUI = e(LobbyUI),
+		LobbyUI = showLobbyUI and e(LobbyUI) or nil,
 		LoadingScreen = e(LoadingScreen, {
 			visible = showLoading,
 			loadingText = loadingText,

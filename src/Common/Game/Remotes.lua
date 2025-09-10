@@ -48,6 +48,11 @@ local Remotes = ByteNet.defineNamespace("Game", function()
 		
 		LoadingScreenHide = ByteNet.definePacket({
 			value = ByteNet.struct({})
+		}),
+		
+		-- Lobby UI System
+		LobbyUIHide = ByteNet.definePacket({
+			value = ByteNet.struct({})
 		})
 	}
 end)

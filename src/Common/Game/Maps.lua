@@ -1,4 +1,5 @@
-local mapFolder = workspace.Maps
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local mapFolder = ReplicatedStorage.Maps
 
 local Maps = {
     Prototype = mapFolder.Prototype,

@@ -69,16 +69,28 @@ function GameManager:StartGame()
 	-- Show loading screen
 	self:ShowLoadingScreen("Loading map: " .. chosenMap.name .. "...")
 	
+	-- Hide lobby UI when game starts
+	self:HideLobbyUI()
+	
 	-- Teleport players to spawn points based on their roles
 	self:TeleportPlayersToSpawns()
 	
-	-- TODO: Add any additional loading logic here
-	-- For now, hide loading screen after teleportation
-	self:HideLoadingScreen()
+	-- Start coroutine to handle loading completion with delay
+	coroutine.wrap(function()
+		-- Wait a bit for everything to load properly
+		wait(2)
+		-- Hide loading screen after delay
+		self:HideLoadingScreen()
+		
+		-- Reset all players' cameras back to their characters
+		self:ResetAllPlayerCameras()
+		
+		-- Unfreeze all players
+		self:UnfreezeAllPlayers()
+	end)()
 	
-	-- Set game state to in progress
 	self:SetGameState(GameState.InProgress)
-	
+
 	-- TODO: Implement remaining game start logic here
 	-- - Start game timers and mechanics
 end
@@ -500,6 +512,33 @@ end
 function GameManager:HideLoadingScreen()
 	print("[GameManager] Hiding loading screen")
 	Remotes.LoadingScreenHide.sendToAll({})
+end
+
+-- Reset all players' cameras back to their characters
+function GameManager:ResetAllPlayerCameras()
+	print("[GameManager] Resetting all player cameras")
+	for userId, playerInstance in pairs(self.Players) do
+		local robloxPlayer = game.Players:GetPlayerByUserId(userId)
+		if robloxPlayer then
+			Remotes.SetCamera.sendTo({
+				cameraType = "Custom"
+			}, robloxPlayer)
+		end
+	end
+end
+
+-- Hide lobby UI from all players
+function GameManager:HideLobbyUI()
+	print("[GameManager] Hiding lobby UI")
+	Remotes.LobbyUIHide.sendToAll({})
+end
+
+-- Unfreeze all players
+function GameManager:UnfreezeAllPlayers()
+	print("[GameManager] Unfreezing all players")
+	for userId, playerInstance in pairs(self.Players) do
+		playerInstance:Unfreeze()
+	end
 end
 
 -- Handle PlayerReady remote
