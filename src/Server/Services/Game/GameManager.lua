@@ -11,6 +11,7 @@ local GameState = require("@GameCommon/Enums/GameState")
 local CommonConfig = require("@Common/Config")
 local LobbyManager = require(script.Parent.Lobby.LobbyManager)
 local MapChooser = require(script.Parent.Lobby.MapChooser)
+local MapInstance = require(script.Parent.MapInstance)
 local Remotes = require(game.ReplicatedStorage.Common.Game.Remotes)
 local Generator = require(script.Parent.Interactables.Generator)
 
@@ -23,7 +24,10 @@ local GameManager = {
 	-- Generator Management
 	CompletedGenerators = 0,
 	RequiredGenerators = 5, -- Will be set from GameConfig when available
-	CurrentMap = nil
+	CurrentMap = nil,
+	
+	-- Map Instance Manager
+	MapInstanceManager = MapInstance.new()
 }
 
 print("[GameManager] Initialized - Expected players: " .. GameManager.ExpectedPlayers .. (RunService:IsStudio() and " (Studio)" or ""))
@@ -33,6 +37,52 @@ print("[GameManager] Initialized - Expected players: " .. GameManager.ExpectedPl
 -- ========================================
 
 -- Private method to connect player events
+
+-- Start the game when all players are ready
+function GameManager:StartGame()
+	print("[GameManager] Starting game with " .. self:GetPlayerCount() .. " players")
+	
+	-- Reset generators for new match
+	self:ResetGenerators()
+	
+	-- Choose a random map for the game
+	local chosenMap = MapChooser:ChooseRandomMap()
+	if chosenMap then
+		print("[GameManager] Selected map: " .. chosenMap.name .. " for the upcoming match!")
+		-- Load the chosen map using MapInstance manager
+		local success = self.MapInstanceManager:LoadMap(chosenMap.name)
+		if success then
+			self.CurrentMap = chosenMap
+			print("[GameManager] Map loaded successfully:", chosenMap.name)
+		else
+			warn("[GameManager] Failed to load map:", chosenMap.name)
+			return
+		end
+	else
+		warn("[GameManager] Failed to select a map! Game cannot start.")
+		return
+	end
+	
+	-- Set game state and notify all clients
+	self:SetGameState(GameState.Starting)
+	
+	-- Broadcast game state change to all clients for loading screen
+	Remotes.GameStateChanged.sendToAll({
+		gameState = "Starting",
+		mapName = chosenMap.name,
+		requiredGenerators = self.RequiredGenerators,
+		completedGenerators = self.CompletedGenerators
+	})
+
+	
+	
+	-- TODO: Implement remaining game start logic here
+	-- - Spawn players in appropriate locations based on chosen map
+	-- - Start game timers and mechanics
+	-- - After loading is complete, send "InProgress" state
+end
+
+
 function GameManager:_connectPlayerEvents()
 	print("[GameManager] Connecting player events...")
 	Players.PlayerAdded:Connect(function(robloxPlayer)
@@ -277,6 +327,21 @@ function GameManager:GetGameState()
 	return self.GameState
 end
 
+-- Get the current map instance
+function GameManager:GetCurrentMapInstance()
+	return self.MapInstanceManager:GetCurrentMap()
+end
+
+-- Get the interactables manager for the current map
+function GameManager:GetInteractablesManager()
+	return self.MapInstanceManager:GetInteractablesManager()
+end
+
+-- Check if a map is currently loaded
+function GameManager:HasMapLoaded()
+	return self.MapInstanceManager:HasMapLoaded()
+end
+
 -- Utility methods
 function GameManager:IsPlayerInGame(userId)
 	return self.Players[userId] ~= nil
@@ -374,41 +439,6 @@ function GameManager:SetPlayerReady(userId, isReady)
 		print("[GameManager] ERROR: Player instance not found for userId: " .. userId)
 		return false
 	end
-end
-
--- Start the game when all players are ready
-function GameManager:StartGame()
-	print("[GameManager] Starting game with " .. self:GetPlayerCount() .. " players")
-	
-	-- Reset generators for new match
-	self:ResetGenerators()
-	
-	-- Choose a random map for the game
-	local chosenMap = MapChooser:ChooseRandomMap()
-	if chosenMap then
-		print("[GameManager] Selected map: " .. chosenMap.name .. " for the upcoming match!")
-		-- Store the chosen map for later use
-		self.CurrentMap = chosenMap
-	else
-		warn("[GameManager] Failed to select a map! Game cannot start.")
-		return
-	end
-	
-	-- Set game state and notify all clients
-	self:SetGameState(GameState.Starting)
-	
-	-- Broadcast game state change to all clients for loading screen
-	Remotes.GameStateChanged.sendToAll({
-		gameState = "Starting",
-		mapName = chosenMap.name,
-		requiredGenerators = self.RequiredGenerators,
-		completedGenerators = self.CompletedGenerators
-	})
-	
-	-- TODO: Implement actual game start logic here
-	-- - Spawn players in appropriate locations based on chosen map
-	-- - Start game timers and mechanics
-	-- - After loading is complete, send "InProgress" state
 end
 
 -- Handle PlayerReady remote

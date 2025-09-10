@@ -17,9 +17,10 @@ local interactableTypes = {
 }
 
 -- Create a new Interactables manager instance
-function Interactables.new()
+function Interactables.new(mapInstance)
 	local self = setmetatable({}, Interactables)
 	self.activeInteractables = {}
+	self.mapInstance = mapInstance
 	return self
 end
 
@@ -51,17 +52,28 @@ function Interactables:setupInteractable(obj, tagName)
 	end)
 end
 
--- Initialize all interactables in the game
+-- Initialize all interactables in the specified map
 function Interactables:Initialize()
+	if not self.mapInstance then
+		warn("[Interactables] No map instance provided, cannot initialize interactables")
+		return
+	end
+	
 	for tagName, _ in pairs(interactableTypes) do
-		-- Setup existing objects
+		-- Setup existing objects within the map instance
 		for _, obj in ipairs(CollectionService:GetTagged(tagName)) do
-			self:setupInteractable(obj, tagName)
+			-- Only setup interactables that are descendants of the map instance
+			if obj:IsDescendantOf(self.mapInstance) then
+				self:setupInteractable(obj, tagName)
+			end
 		end
 		
-		-- Listen for new objects
+		-- Listen for new objects within the map
 		CollectionService:GetInstanceAddedSignal(tagName):Connect(function(obj)
-			self:setupInteractable(obj, tagName)
+			-- Only setup if the object is within our map instance
+			if self.mapInstance and obj:IsDescendantOf(self.mapInstance) then
+				self:setupInteractable(obj, tagName)
+			end
 		end)
 		
 		-- Clean up removed objects
@@ -72,6 +84,17 @@ function Interactables:Initialize()
 			end
 		end)
 	end
+end
+
+-- Clean up all active interactables
+function Interactables:Cleanup()
+	for obj, interactable in pairs(self.activeInteractables) do
+		if interactable and interactable.Destroy then
+			interactable:Destroy()
+		end
+	end
+	self.activeInteractables = {}
+	print("[Interactables] Cleaned up all active interactables")
 end
 
 -- Export the Interactables class for external initialization
