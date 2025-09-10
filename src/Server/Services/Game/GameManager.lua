@@ -44,7 +44,7 @@ function GameManager:StartGame()
 	
 	-- Reset generators for new match
 	self:ResetGenerators()
-	
+	 
 	-- Choose a random map for the game
 	local chosenMap = MapChooser:ChooseRandomMap()
 	if chosenMap then
