@@ -13,20 +13,22 @@ local function UIRoot()
 	local showLoading, setShowLoading = React.useState(false)
 	local loadingText, setLoadingText = React.useState("Preparing game...")
 	
-	-- Listen for game state changes
+	-- Listen for loading screen events
 	React.useEffect(function()
-		-- Listen for game starting event
-		local connection = Remotes.GameStateChanged.listen(function(data)
-			if data.gameState == "Starting" then
-				setShowLoading(true)
-				setLoadingText("Loading map: " .. (data.mapName or "Unknown") .. "...")
-			elseif data.gameState == "InProgress" then
-				setShowLoading(false)
-			end
+		-- Listen for loading screen show event
+		local showConnection = Remotes.LoadingScreenShow.listen(function(data)
+			setShowLoading(true)
+			setLoadingText(data.message or "Loading...")
+		end)
+		
+		-- Listen for loading screen hide event
+		local hideConnection = Remotes.LoadingScreenHide.listen(function(data)
+			setShowLoading(false)
 		end)
 		
 		return function()
-			connection:Disconnect()
+			showConnection:Disconnect()
+			hideConnection:Disconnect()
 		end
 	end, {})
 	

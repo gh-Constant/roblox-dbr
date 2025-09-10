@@ -63,23 +63,24 @@ function GameManager:StartGame()
 		return
 	end
 	
-	-- Set game state and notify all clients
+	-- Set game state
 	self:SetGameState(GameState.Starting)
 	
-	-- Broadcast game state change to all clients for loading screen
-	Remotes.GameStateChanged.sendToAll({
-		gameState = "Starting",
-		mapName = chosenMap.name,
-		requiredGenerators = self.RequiredGenerators,
-		completedGenerators = self.CompletedGenerators
-	})
-
+	-- Show loading screen
+	self:ShowLoadingScreen("Loading map: " .. chosenMap.name .. "...")
 	
+	-- Teleport players to spawn points based on their roles
+	self:TeleportPlayersToSpawns()
+	
+	-- TODO: Add any additional loading logic here
+	-- For now, hide loading screen after teleportation
+	self:HideLoadingScreen()
+	
+	-- Set game state to in progress
+	self:SetGameState(GameState.InProgress)
 	
 	-- TODO: Implement remaining game start logic here
-	-- - Spawn players in appropriate locations based on chosen map
 	-- - Start game timers and mechanics
-	-- - After loading is complete, send "InProgress" state
 end
 
 
@@ -342,6 +343,52 @@ function GameManager:HasMapLoaded()
 	return self.MapInstanceManager:HasMapLoaded()
 end
 
+-- Teleport all players to spawn points based on their roles
+function GameManager:TeleportPlayersToSpawns()
+	if not self:HasMapLoaded() then
+		warn("[GameManager] Cannot teleport players - no map loaded")
+		return false
+	end
+	
+	local playerRoleMap = {}
+	
+	-- Build player-role mapping
+	for userId, playerData in pairs(self.Players) do
+		local robloxPlayer = game.Players:GetPlayerByUserId(userId)
+		if robloxPlayer and robloxPlayer.Character then
+			local role = playerData.Role
+			if role then
+				-- Convert role to spawn point naming convention
+				local spawnRole
+				if role == "Killer" then
+					spawnRole = "killer"
+				elseif role == "Survivor" then
+					spawnRole = "survivor"
+				else
+					warn("[GameManager] Unknown role for player", robloxPlayer.Name, ":", role)
+					continue
+				end
+				
+				playerRoleMap[robloxPlayer] = spawnRole
+			else
+				warn("[GameManager] No role assigned to player:", robloxPlayer.Name)
+			end
+		else
+			warn("[GameManager] Player not found or no character:", userId)
+		end
+	end
+	
+	-- Teleport players using MapInstance
+	local success = self.MapInstanceManager:TeleportPlayers(playerRoleMap)
+	if success then
+		print("[GameManager] Successfully teleported all players to spawn points")
+	else
+		warn("[GameManager] Some players failed to teleport to spawn points")
+	end
+	
+	return success
+end
+
 -- Utility methods
 function GameManager:IsPlayerInGame(userId)
 	return self.Players[userId] ~= nil
@@ -439,6 +486,20 @@ function GameManager:SetPlayerReady(userId, isReady)
 		print("[GameManager] ERROR: Player instance not found for userId: " .. userId)
 		return false
 	end
+end
+
+-- Show loading screen to all players
+function GameManager:ShowLoadingScreen(message)
+	print("[GameManager] Showing loading screen: " .. (message or "Loading..."))
+	Remotes.LoadingScreenShow.sendToAll({
+		message = message or "Loading..."
+	})
+end
+
+-- Hide loading screen from all players
+function GameManager:HideLoadingScreen()
+	print("[GameManager] Hiding loading screen")
+	Remotes.LoadingScreenHide.sendToAll({})
 end
 
 -- Handle PlayerReady remote

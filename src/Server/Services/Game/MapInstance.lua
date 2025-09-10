@@ -5,6 +5,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
 local Interactables = require(script.Parent.Interactables)
 
 local MapInstance = {}
@@ -116,6 +117,94 @@ end
 -- Get interactables manager for the current map
 function MapInstance:GetInteractablesManager()
 	return self.interactablesManager
+end
+
+-- Get spawn points for a specific role from the current map
+function MapInstance:GetSpawnPoints(role)
+	if not self.currentMapInstance then
+		warn("[MapInstance] No current map instance to get spawn points from")
+		return {}
+	end
+	
+	local spawnPointsFolder = self.currentMapInstance:FindFirstChild("SpawnPoints")
+	if not spawnPointsFolder then
+		warn("[MapInstance] No SpawnPoints folder found in current map")
+		return {}
+	end
+	
+	local roleSpawnPoints = {}
+	for _, spawnFolder in ipairs(spawnPointsFolder:GetChildren()) do
+		if spawnFolder:IsA("Folder") then
+			for _, spawnPoint in ipairs(spawnFolder:GetChildren()) do
+				if spawnPoint.Name:lower():find(role:lower()) then
+					table.insert(roleSpawnPoints, spawnPoint)
+				end
+			end
+		end
+	end
+	
+	return roleSpawnPoints
+end
+
+-- Teleport a player to a random spawn point based on their role
+function MapInstance:TeleportPlayerToSpawn(player, role)
+	if not player or not player.Character then
+		warn("[MapInstance] Invalid player or no character to teleport")
+		return false
+	end
+	
+	local spawnPoints = self:GetSpawnPoints(role)
+	if #spawnPoints == 0 then
+		warn("[MapInstance] No spawn points found for role:", role)
+		return false
+	end
+	
+	-- Select a random spawn point
+	local randomIndex = math.random(1, #spawnPoints)
+	local selectedSpawn = spawnPoints[randomIndex]
+	
+	-- Get the spawn position
+	local spawnPosition
+	if selectedSpawn:IsA("Part") then
+		spawnPosition = selectedSpawn.Position + Vector3.new(0, 5, 0) -- Offset to avoid clipping
+	elseif selectedSpawn:IsA("Model") and selectedSpawn.PrimaryPart then
+		spawnPosition = selectedSpawn.PrimaryPart.Position + Vector3.new(0, 5, 0)
+	else
+		warn("[MapInstance] Invalid spawn point type for:", selectedSpawn.Name)
+		return false
+	end
+	
+	-- Teleport the player
+	local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+	if humanoidRootPart then
+		humanoidRootPart.CFrame = CFrame.new(spawnPosition)
+		print("[MapInstance] Teleported", player.Name, "to", role, "spawn point:", selectedSpawn.Name)
+		return true
+	else
+		warn("[MapInstance] No HumanoidRootPart found for player:", player.Name)
+		return false
+	end
+end
+
+-- Teleport multiple players to spawn points based on their roles
+function MapInstance:TeleportPlayers(playerRoleMap)
+	if not self.currentMapInstance then
+		warn("[MapInstance] No current map instance to teleport players")
+		return false
+	end
+	
+	local successCount = 0
+	local totalPlayers = 0
+	
+	for player, role in pairs(playerRoleMap) do
+		totalPlayers = totalPlayers + 1
+		if self:TeleportPlayerToSpawn(player, role) then
+			successCount = successCount + 1
+		end
+	end
+	
+	print("[MapInstance] Teleported", successCount, "out of", totalPlayers, "players")
+	return successCount == totalPlayers
 end
 
 return MapInstance

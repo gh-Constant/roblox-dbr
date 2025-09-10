@@ -37,6 +37,17 @@ local Remotes = ByteNet.defineNamespace("Game", function()
 				remaining = ByteNet.uint8,
 				required = ByteNet.uint8
 			})
+		}),
+		
+		-- Loading Screen System
+		LoadingScreenShow = ByteNet.definePacket({
+			value = ByteNet.struct({
+				message = ByteNet.string
+			})
+		}),
+		
+		LoadingScreenHide = ByteNet.definePacket({
+			value = ByteNet.struct({})
 		})
 	}
 end)
